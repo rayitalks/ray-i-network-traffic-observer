@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Ray-i Network Traffic Observer</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script src="/app.js" defer></script>
+    <script src="/dashboards.js" defer></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="Ray-i Network Traffic Observer home"
+        ><span class="brand-mark">R</span
+        ><span class="brand-name"
+          >Ray-i<small>Network Traffic Observer</small></span
+        ><span class="brand-dot">.</span></a
+      >
+      <div class="eyebrow side-label">NETWORK TRAFFIC OBSERVER</div>
+      <nav aria-label="Main navigation">
+        <button data-view="overview" class="nav active">
+          <span>◈</span>Overview</button
+        ><button data-view="history" class="nav">
+          <span>≡</span>Network history
+        </button>
+        <button data-view="dash-live" class="nav">
+          <span>◉</span>Live app activity</button
+        ><button data-view="dash-timeline" class="nav">
+          <span>↔</span>Connection timeline</button
+        ><button data-view="dash-health" class="nav">
+          <span>♡</span>Network health</button
+        ><button data-view="dash-spikes" class="nav">
+          <span>ϟ</span>Traffic spikes</button
+        ><button data-view="dash-destinations" class="nav">
+          <span>◇</span>New destinations</button
+        ><button data-view="dash-adapters" class="nav">
+          <span>⇄</span>Adapter comparison</button
+        ><button data-view="dash-dns" class="nav">
+          <span>⌘</span>DNS activity
+        </button>
+      </nav>
+      <div class="side-bottom">
+        <div class="local-badge"><i></i> Local by design</div>
+        <p>Your observations stay<br />on this computer.</p>
+        <span class="version">RAY-I NTO / 1.0.0</span>
+      </div>
+    </aside>
+    <main>
+      <header>
+        <div class="breadcrumb">
+          WORKSPACE <span>/</span> <strong>THIS COMPUTER</strong>
+        </div>
+        <div class="header-right">
+          <span id="health" class="health">Starting collector</span>
+        </div>
+      </header>
+      <div class="page-heading">
+        <div>
+          <div class="eyebrow">RAY-I NETWORK TRAFFIC OBSERVER</div>
+          <h1 id="page-title">A clearer view of your network.</h1>
+          <p id="page-subtitle">
+            Understand the traffic. Keep the context. Stay in control.
+          </p>
+        </div>
+        <div class="toolbar">
+          <select id="range" aria-label="Time range">
+            <option value="1">Last hour</option>
+            <option value="24" selected>Last 24 hours</option>
+            <option value="168">Last 7 days</option>
+            <option value="720">Last 30 days</option></select
+          ><select id="export-type" aria-label="Export format">
+            <option value="report">Summary report</option>
+            <option value="connections">Connections CSV</option>
+            <option value="bandwidth">Bandwidth CSV</option></select
+          ><button id="export" class="button primary">↓ Export</button>
+        </div>
+      </div>
+      <div id="notice" role="status" class="notice">
+        Starting your network observer…
+      </div>
+      <section id="overview" class="view">
+        <div class="metrics">
+          <article class="metric">
+            <div class="metric-label">
+              DOWNLOADED <span class="metric-icon teal">↓</span>
+            </div>
+            <div class="metric-value" id="download">—</div>
+            <div class="metric-note">Selected adapter · observed traffic</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              UPLOADED <span class="metric-icon blue">↑</span>
+            </div>
+            <div class="metric-value" id="upload">—</div>
+            <div class="metric-note">Selected adapter · observed traffic</div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              CONNECTIONS OBSERVED <span class="metric-icon">⌁</span>
+            </div>
+            <div class="metric-value" id="connections">—</div>
+            <div class="metric-note" id="app-count">
+              Waiting for TCP snapshots
+            </div>
+          </article>
+          <article class="metric">
+            <div class="metric-label">
+              NETWORK ADAPTERS <span class="metric-icon amber">⊘</span>
+            </div>
+            <div class="metric-value" id="adapter-count">—</div>
+            <div class="metric-note">Available interfaces</div>
+          </article>
+        </div>
+        <div class="main-grid">
+          <article class="panel bandwidth">
+            <div class="panel-heading">
+              <div>
+                <h2>Bandwidth activity</h2>
+                <p>Traffic through one network adapter</p>
+              </div>
+              <select id="adapter" aria-label="Network adapter">
+                <option>Discovering adapters…</option>
+              </select>
+            </div>
+            <div class="rate-row">
+              <div>
+                <span class="legend-dot teal-bg"></span> Download
+                <strong id="rx-rate">—</strong>
+              </div>
+              <div>
+                <span class="legend-dot blue-bg"></span> Upload
+                <strong id="tx-rate">—</strong>
+              </div>
+              <span class="live-label">5 SECOND SAMPLES</span>
+            </div>
+            <div class="chart-wrap">
+              <canvas
+                id="chart"
+                role="img"
+                aria-label="Download and upload bandwidth over the selected time range"
+              ></canvas>
+              <div id="chart-empty" class="chart-empty">
+                Collecting the first bandwidth samples…
+              </div>
+            </div>
+            <div class="chart-footer">
+              <span id="chart-start">Collection begins when Ray-i starts</span
+              ><span id="chart-end">Now</span>
+            </div>
+            <p class="footnote">
+              Adapter totals include all traffic on that interface. VPN and
+              virtual adapters may measure the same traffic.
+            </p>
+          </article>
+          <article class="panel privacy-card">
+            <div class="eyebrow">YOUR NETWORK. YOUR DEVICE.</div>
+            <div class="orb" aria-hidden="true"><span>◎</span></div>
+            <h2>Clarity without the cloud.</h2>
+            <p>
+              Explore connection changes, DNS cache observations, adapter
+              traffic, and opt-in connection health.
+            </p>
+            <button class="text-button" data-view="dash-live">
+              Explore live activity →
+            </button>
+          </article>
+        </div>
+        <div class="secondary-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Apps in motion</h2>
+                <p>Ranked by observed connections</p>
+              </div>
+              <span class="tag">TOP 8</span>
+            </div>
+            <div id="apps" class="rank-list">
+              <div class="empty">
+                Your apps will appear as connections are observed.
+              </div>
+            </div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>A record you control</h2>
+                <p>Built for your computer</p>
+              </div>
+            </div>
+            <p class="footnote">
+              Sampled observations are retained for 30 days. No accounts, cloud
+              uploads, or analytics. Exports can include private network
+              details; review them before sharing.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section id="history" class="view hidden">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Your network, with context.</h2>
+              <p>Search the observations retained on this computer.</p>
+            </div>
+            <span class="tag">30 DAY RETENTION</span>
+          </div>
+          <div class="filters">
+            <input
+              id="search"
+              type="search"
+              placeholder="Search apps or IP addresses…"
+              aria-label="Search connections"
+            /><span id="result-count">0 observations</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>APPLICATION / DESTINATION</th>
+                  <th>PORT</th>
+                  <th>TCP STATE</th>
+                  <th>LAST OBSERVED</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <div class="pagination">
+            <span id="page-info">No observations yet</span>
+            <div>
+              <button id="previous" class="button small">← Previous</button
+              ><button id="next" class="button small">Next →</button>
+            </div>
+          </div>
+          <p class="footnote table-note">
+            History is sampled while Ray-i runs. The time range filters when a
+            connection was last observed, not when it started. Short-lived
+            connections and collection gaps may be missing.
+          </p>
+        </article>
+      </section>
+      <section id="dashboard" class="view hidden">
+        <div class="dashboard-controls">
+          <input
+            id="dashboard-search"
+            type="search"
+            aria-label="Search dashboard"
+            placeholder="Filter apps or destinations…"
+          /><span id="dashboard-scope"></span>
+        </div>
+        <div id="dashboard-status" class="notice" role="status">
+          Loading observations…
+        </div>
+        <div id="dashboard-settings" class="panel hidden"></div>
+        <div id="dashboard-metrics" class="metrics"></div>
+        <div id="dashboard-visual" class="panel dashboard-visual"></div>
+        <div id="dashboard-records" class="panel"></div>
+        <p id="dashboard-method" class="footnote"></p>
+      </section>
+      <footer>
+        <span><i></i> Stored locally · No cloud uploads · 30 day retention</span
+        ><span id="updated">Waiting for first sample</span>
+        <button id="stop" class="button small">Stop collector</button>
+      </footer>
+    </main>
+  </body>
+</html>

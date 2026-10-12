@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+*.sqlite*
+*.db*
+.env*
+data/
+*.log
+monitoring.json
+monitoring.tmp
