@@ -1,6 +1,14 @@
 # Ray-i Network Traffic Observer
 
-A standalone Windows network observer. See adapter bandwidth, sampled TCP activity, connection changes, DNS cache observations, and optional network-health measurements. No account or cloud service is required.
+**Your network, in focus.**
+
+Turn network activity into a clear, searchable picture with **Ray-i Network Traffic Observer**: nine Windows dashboards for live application connections, adapter bandwidth, TCP history, connection timelines, traffic spikes, new destinations, adapter comparison, DNS cache insights, and optional network-health checks.
+
+See which applications have active connections, spot changes as they happen between samples, investigate first-seen destinations, and compare traffic across your adapters. Keep 30 days of observations on your computer and turn them into CSV exports and shareable HTML reports. No account, cloud service, or observation uploads required.
+
+## Platform support
+
+**Windows is the supported platform for this release.** DNS cache collection and optional ICMP health probes use Windows PowerShell; the included setup launcher is Windows-specific. The Python core uses psutil for TCP snapshots and adapter counters, but full Linux and macOS operation has not been validated and those Windows-dependent features are not portable as implemented. This release does not claim full Linux or macOS support.
 
 ## Quick start
 
