@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="/style.css" />
     <script src="/app.js" defer></script>
     <script src="/dashboards.js" defer></script>
+    <script src="/insights.js" defer></script>
+    <link rel="stylesheet" href="/insights.css" />
   </head>
   <body>
     <aside class="sidebar">
@@ -18,6 +20,7 @@
       >
       <div class="eyebrow side-label">NETWORK TRAFFIC OBSERVER</div>
       <nav aria-label="Main navigation">
+        <button data-view="insights" class="nav"><span>▦</span>System insights</button>
         <button data-view="overview" class="nav active">
           <span>◈</span>Overview</button
         ><button data-view="history" class="nav">
@@ -256,6 +259,27 @@
         <div id="dashboard-visual" class="panel dashboard-visual"></div>
         <div id="dashboard-records" class="panel"></div>
         <p id="dashboard-method" class="footnote"></p>
+      </section>
+      <section id="insights" class="view hidden">
+        <div id="insights-status" class="notice" role="status">Loading system observations…</div>
+        <div class="insights-toolbar">
+          <button class="button" id="insights-live">Live view</button>
+          <button class="button" id="insights-record">Start recording</button>
+          <button class="button" id="insights-stop-record">Stop recording</button>
+          <button class="button" id="insights-download">Download trace</button>
+          <label class="button">Import trace<input id="insights-import" type="file" accept=".json,application/json" /></label>
+        </div>
+        <article class="panel insights-panel">
+          <h2>Recorder &amp; replay</h2>
+          <p id="insights-recorder-state">Recorder status pending</p>
+          <div class="insights-toolbar"><button class="button" id="insights-play">Play replay</button><input id="insights-scrub" aria-label="Trace sample" type="range" min="0" max="0" value="0" /><span id="insights-time">Live</span></div>
+          <p class="footnote">Recordings contain CPU, memory, frequency, and battery observations. Download a trace to keep it after the server closes. Starting a new recording replaces the prior in-memory recording. Connections, installed apps, disk scans, and benchmarks are separate live views.</p>
+        </article>
+        <div id="insights-snapshot"></div>
+        <article class="panel insights-panel"><h2>Connections &amp; listeners</h2><button id="insights-connections" class="button">Refresh connections</button><div id="insights-connections-result"></div></article>
+        <article class="panel insights-panel"><h2>Installed apps</h2><button id="insights-apps" class="button">Load installed apps</button><div id="insights-apps-result"></div></article>
+        <article class="panel insights-panel"><h2>Disk usage</h2><p>Choose a folder to inspect. Scans are bounded and may show partial totals for large or inaccessible folders.</p><div class="insights-toolbar"><input id="insights-path" type="text" aria-label="Folder to scan" placeholder="C:\Users\your-name\Downloads" /><button id="insights-disk" class="button">Scan folder</button></div><div id="insights-disk-result"></div></article>
+        <article class="panel insights-panel"><h2>CPU benchmark</h2><p>Run a short CPU workload on demand. Results reflect current system load.</p><button id="insights-benchmark" class="button">Run benchmark</button><div id="insights-benchmark-result"></div></article>
       </section>
       <footer>
         <span><i></i> Stored locally · No cloud uploads · 30 day retention</span

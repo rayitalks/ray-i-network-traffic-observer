@@ -65,6 +65,8 @@ async function api(path, options) {
   return data;
 }
 function changeView(view) {
+  if (view === "insights") { openInsights(); return; }
+  document.querySelector(".page-heading .toolbar").classList.remove("hidden");
   if (view.startsWith("dash-")) {
     openDashboard(view.slice(5));
     return;

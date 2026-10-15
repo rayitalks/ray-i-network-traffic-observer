@@ -23,6 +23,8 @@ import webbrowser
 
 import psutil
 from telemetry import Telemetry
+from system_insights import SystemInsights
+from insight_recorder import InsightRecorder
 
 ROOT = Path(__file__).resolve().parent
 RETENTION = 30 * 86400
@@ -121,6 +123,9 @@ class RayiNetworkTrafficObserver:
         self.stop = threading.Event()
         self.opener = build_opener(ProxyHandler({}))
         self.telemetry = Telemetry(self, data_dir)
+        self.insights = SystemInsights()
+        self.recorder = InsightRecorder(self.insights)
+        self.insight_job = threading.Lock()
 
     def maintain(self):
         while not self.stop.is_set():
@@ -279,6 +284,14 @@ def handler_for(app, port):
             path = urlsplit(self.path).path
             try:
                 if path.startswith('/api/'):
+                    insight_reads = {
+                        '/api/insights/snapshot': app.recorder.snapshot,
+                        '/api/insights/recording': app.recorder.recording,
+                        '/api/insights/connections': app.insights.connections,
+                        '/api/insights/apps': app.insights.installed_apps,
+                    }
+                    if path in insight_reads:
+                        return self.send(200, insight_reads[path]())
                     if path == '/api/health':
                         return self.send(200, {'application': 'Ray-i Network Traffic Observer', 'version': '1.0.0'})
                     hours, search, verdict, offset, adapter, source = self.params()
@@ -351,6 +364,8 @@ def handler_for(app, port):
                                          {'Content-Disposition': 'attachment; filename="ray-i-network-traffic-observer-report.html"'})
                     return self.send(404, {'error': 'Not found'})
                 files = {'/': ('index.html', 'text/html; charset=utf-8'),
+                         '/insights.js': ('insights.js', 'text/javascript; charset=utf-8'),
+                         '/insights.css': ('insights.css', 'text/css; charset=utf-8'),
                          '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
                          '/dashboards.js': ('dashboards.js', 'text/javascript; charset=utf-8'),
                          '/style.css': ('style.css', 'text/css; charset=utf-8')}
@@ -366,6 +381,32 @@ def handler_for(app, port):
         def do_POST(self):
             if not self.safe_request(write=True):
                 return
+            path = urlsplit(self.path).path
+            if path in ('/api/insights/record-start', '/api/insights/record-stop',
+                        '/api/insights/disk', '/api/insights/benchmark'):
+                try:
+                    length = int(self.headers.get('Content-Length', '0'))
+                    if not 0 < length <= 4096:
+                        raise ValueError('Invalid request size')
+                    body = json.loads(self.rfile.read(length))
+                    if not isinstance(body, dict):
+                        raise ValueError('Expected an object')
+                    if path.endswith('/record-start'):
+                        return self.send(200, app.recorder.start())
+                    if path.endswith('/record-stop'):
+                        return self.send(200, app.recorder.stop())
+                    if not app.insight_job.acquire(blocking=False):
+                        return self.send(409, {'error': 'A diagnostic job is already running'})
+                    try:
+                        result = (app.insights.disk_space(body.get('path')) if path.endswith('/disk')
+                                  else app.insights.benchmark())
+                    finally:
+                        app.insight_job.release()
+                    return self.send(200, result)
+                except (ValueError, TypeError, AttributeError):
+                    return self.send(400, {'error': 'Invalid diagnostic request or folder path'})
+                except OSError:
+                    return self.send(400, {'error': 'The selected folder could not be read'})
             if urlsplit(self.path).path in ('/api/monitoring', '/api/acknowledge'):
                 try:
                     length = int(self.headers.get('Content-Length', '0'))
@@ -424,7 +465,8 @@ def main():
             webbrowser.open(f'http://127.0.0.1:{args.port}')
         return
     for target in (app.maintain, app.collect_counters, app.collect_os_connections,
-                   app.telemetry.collect_dns, app.telemetry.collect_probes):
+                   app.telemetry.collect_dns, app.telemetry.collect_probes,
+                   lambda: app.recorder.collect(app.stop)):
         threading.Thread(target=target, daemon=True).start()
     print(f'Ray-i is running at http://127.0.0.1:{args.port} (Ctrl+C to stop)', flush=True)
     print(f'Local data: {args.data_dir}', flush=True)

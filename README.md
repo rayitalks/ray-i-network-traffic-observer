@@ -54,7 +54,17 @@ Observations are retained for 30 days. Closing the browser does not stop collect
 
 Dashboard CSVs export the displayed record collection with generation time and lookback metadata. Timeline, alerts, and DNS views show up to 500 rows; the health plot/table shows the latest 300 probes while summary metrics cover the whole selected range. History CSV exports all matching observations. Live activity always describes the latest snapshot; adapter comparison shows all interfaces. HTML reports summarize the time range and selected adapter independently of history search.
 
-## Development
+## System insights
+
+Open **System insights** for CPU utilization by logical processor, memory, reported CPU frequency, and battery state. CPU utilization samples a short 0.1-second interval approximately every two seconds; it is not a full-interval average. Missing readings remain unavailable. Windows frequency may be a nominal rather than instantaneous clock.
+
+**Start recording** stores up to 3,600 system snapshots in memory, stopping automatically at the limit. Stop, scrub, and play snapshots; download an NTO JSON trace to retain it across server restarts. Starting a new recording replaces the previous in-memory session. Imported traces remain in the browser. Replay advances one sample per second, independent of capture timing; timestamps preserve gaps. The NTO trace format is independent and does not import TMOG traces.
+
+The same screen provides on-demand TCP/UDP socket ownership and local binding scope, installed desktop-app inventory sorted by publisher-estimated size, explicit folder scans, and a one-second SHA-256 throughput benchmark. Folder scans stop at 10,000 entries or three seconds, skip links/reparse points, and show partial totals when truncated. Registry inventories can omit portable and Store apps. Local bindings do not prove Internet reachability. The benchmark is a hashing measurement, not a general system score.
+
+This is an independent implementation informed by TMOG's publicly documented feature categories. It is not feature parity: GPU telemetry, watts, thermal sensors, device health, TMOG trace compatibility, and full multi-subsystem benchmarks are not implemented. Recordings contain system metrics only, not process histories or connection snapshots.
+
+## Development checks
 
 ```powershell
 .venv\Scripts\python.exe -m unittest discover -s tests -v

@@ -93,6 +93,20 @@ class MeasurementTests(unittest.TestCase):
 
 
 class HTTPTests(unittest.TestCase):
+    def test_insight_actions_require_csrf_and_validate_body(self):
+        for route in ('record-start', 'record-stop', 'disk', 'benchmark'):
+            self.assertEqual(self.request('/api/insights/' + route, 'POST', {}, '{}')[0], 403)
+        headers = {'X-Ray-i-Token': self.app.csrf, 'Content-Type': 'application/json'}
+        self.assertEqual(self.request('/api/insights/record-start', 'POST', headers, '[]')[0], 400)
+        self.assertEqual(self.request('/api/insights/record-start', 'POST', headers, '{}')[0], 200)
+        self.assertTrue(self.app.recorder.active)
+        self.assertEqual(self.request('/api/insights/record-stop', 'POST', headers, '{}')[0], 200)
+        self.assertFalse(self.app.recorder.active)
+        self.app.insights.benchmark = Mock(return_value={'seconds': 1})
+        with self.app.insight_job:
+            self.assertEqual(self.request('/api/insights/benchmark', 'POST', headers, '{}')[0], 409)
+        self.app.insights.benchmark.assert_not_called()
+
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.app = RayiNetworkTrafficObserver(Path(self.directory.name))
